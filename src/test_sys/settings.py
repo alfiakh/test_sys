@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+import ConfigParser
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -74,10 +75,22 @@ WSGI_APPLICATION = 'test_sys.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
+conf = ConfigParser.ConfigParser()
+config_path = os.environ.get('TESTSYS_CONFIG_PATH')
+if not config_path:
+    raise Exception(u'No config path specified!')
+if not os.path.isdir(config_path):
+    raise Exception(u'Config path is not a directory!')
+conf.read(config_path)
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': conf.get('default_database', 'ENGINE'),
+        'NAME': conf.get('default_database', 'NAME'),
+        'USER': conf.get('default_database', 'USER'),
+        'PASSWORD': conf.get('default_database', 'PASSWORD'),
+        'HOST': conf.get('default_database', 'HOST'),
+        'PORT': conf.get('default_database', 'PORT')
     }
 }
 
