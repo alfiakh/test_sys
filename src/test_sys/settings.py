@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Django settings for test_sys project.
 
@@ -71,26 +72,46 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'test_sys.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
+# задаем имя дефолтного конфига
+DEFAULT_CONFIG_NAME = 'test_sys.conf'
+
+# инициализируем конфигпарсер
 conf = ConfigParser.ConfigParser()
+
+# отдаем путь до конфига из виртуального окружения
 config_path = os.environ.get('TESTSYS_CONFIG_PATH')
+
+# ругаемся
 if not config_path:
-    raise Exception(u'No config path specified!')
-if not os.path.isdir(config_path):
-    raise Exception(u'Config path is not a directory!')
+    raise Exception(
+        u'Sorry! There is no environment variable "TESTSYS_CONFIG_PATH"')
+
+# ругаемся
+if not os.path.exists(config_path) or not os.path.isdir(config_path):
+    raise Exception(
+        u'The path specified in environment varible "TESTSYS_CONFIG_PATH"',
+        u'doesn\'t exist or it is not a directory!')
+
+# ругаемся
+config_path += DEFAULT_CONFIG_NAME
+if not os.path.exists(config_path) or os.path.isdir(config_path):
+    raise Exception(
+        u'Config file at path {0} does not exist!'.format(config_path))
+
+# если не попали на ругачку, читаем конфиг
 conf.read(config_path)
 
 DATABASES = {
     'default': {
-        'ENGINE': conf.get('default_database', 'ENGINE'),
-        'NAME': conf.get('default_database', 'NAME'),
-        'USER': conf.get('default_database', 'USER'),
-        'PASSWORD': conf.get('default_database', 'PASSWORD'),
-        'HOST': conf.get('default_database', 'HOST'),
-        'PORT': conf.get('default_database', 'PORT')
+        'ENGINE': conf.get('default_database', 'DATABASE_ENGINE'),
+        'NAME': conf.get('default_database', 'DATABASE_NAME'),
+        'USER': conf.get('default_database', 'DATABASE_USER'),
+        'PASSWORD': conf.get('default_database', 'DATABASE_PASSWORD'),
+        'HOST': conf.get('default_database', 'DATABASE_HOST'),
+        'PORT': conf.get('default_database', 'DATABASE_PORT')
     }
 }
 
@@ -107,7 +128,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
